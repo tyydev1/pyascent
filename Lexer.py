@@ -46,10 +46,10 @@ class Lexer:
     
     def __is_digit(self, ch: str) -> bool:
         """ Checks if the character is a digit """
-        return '0' <= ch and ch <= '9'
+        return '0' <= ch <= '9'
     
     def __is_letter(self, ch: str) -> bool:
-        return 'a' <= ch and ch <= "z" or 'A' <= ch and ch <= 'Z' or ch in ( '_', '$' ) # TODO: gosh fred do we need the dollar sign??
+        return 'a' <= ch <= "z" or 'A' <= ch <= 'Z' or ch in {'_', '$'} # TODO: gosh fred do we need the dollar sign??
         # FRED: we might
         # TODO: it's risky to the codebase!
         # FRED: we can remove it..?
@@ -92,6 +92,7 @@ class Lexer:
             Main function for executing the Lexer
         """
         tok: Token = None # type: ignore
+        ch: str | None
 
         # Skip the whitespace and ignored characters
         self.__skip_whitespace()
@@ -114,8 +115,41 @@ class Lexer:
                 tok = self.__new_token(TokenType.POW, self.current_char)
             case '%':
                 tok = self.__new_token(TokenType.MODULUS, self.current_char)
+                
+            case '<':
+                # Handle <=
+                if self.__peek_char() == '=':
+                    ch = self.current_char
+                    self.__read_char()
+                    tok = self.__new_token(TokenType.LT_EQ, ch + self.current_char)
+                else:
+                    tok = self.__new_token(TokenType.LT, self.current_char)
+            case '>':
+                # Handle >=
+                if self.__peek_char() == '=':
+                    ch = self.current_char
+                    self.__read_char()
+                    tok = self.__new_token(TokenType.GT_EQ, ch + self.current_char)
+                else:
+                    tok = self.__new_token(TokenType.GT, self.current_char)
             case '=':
-                tok = self.__new_token(TokenType.EQ, self.current_char)
+                # Handle ==
+                if self.__peek_char() == '=':
+                    ch = self.current_char
+                    self.__read_char()
+                    tok = self.__new_token(TokenType.EQ_EQ, ch + self.current_char)
+                else:
+                    tok = self.__new_token(TokenType.EQ, self.current_char)
+            case '!':
+                # Handle !=
+                if self.__peek_char() == '=':
+                    ch = self.current_char
+                    self.__read_char()
+                    tok = self.__new_token(TokenType.NOT_EQ, ch + self.current_char)
+                else:
+                    # TODO: Implement BANG
+                    tok = self.__new_token(TokenType.ILLEGAL, self.current_char)
+                    
             case ':':
                 tok = self.__new_token(TokenType.COLON, self.current_char)
             case ';':
@@ -137,11 +171,9 @@ class Lexer:
                 if self.__is_letter(self.current_char):
                     literal: str = self.__read_identifier()
                     tt: TokenType = lookup_ident(literal)
-                    tok = self.__new_token(tt=tt, literal=literal)
-                    return tok
+                    return self.__new_token(tt=tt, literal=literal)
                 elif self.__is_digit(self.current_char):
-                    tok = self.__read_number()
-                    return tok
+                    return self.__read_number()
                 else:
                     tok = self.__new_token(TokenType.ILLEGAL, self.current_char)
 

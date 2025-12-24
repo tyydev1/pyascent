@@ -22,6 +22,14 @@ class TokenType(Enum):
     # Assignment Symbols
     EQ          = "EQ"
     
+    # Comparison Symbols
+    LT          = '<'
+    GT          = '>'
+    EQ_EQ       = '=='
+    NOT_EQ      = '!='
+    LT_EQ       = '<='
+    GT_EQ       = '>='
+    
     # Symbols
     COLON       = "COLON"
     SEMICOLON   = "SEMICOLON"
@@ -35,6 +43,10 @@ class TokenType(Enum):
     VAR         = "VAR"
     FN          = "FN"
     RET         = "RET"
+    IF          = "IF"
+    ELSE        = "ELSE"
+    TRUE        = "TRUE"
+    FALSE       = "FALSE"
     
     # Types
     TYPE        = "TYPE"
@@ -56,6 +68,10 @@ KEYWORDS: Dict[str, TokenType] = {
     "var": TokenType.VAR,
     "fn": TokenType.FN,
     "ret": TokenType.RET,
+    "if": TokenType.IF,
+    "else": TokenType.ELSE,
+    "true": TokenType.TRUE,
+    "false": TokenType.FALSE,
 }
 
 ALT_KEYWORDS: Dict[str, TokenType] = {
@@ -67,10 +83,13 @@ ALT_KEYWORDS: Dict[str, TokenType] = {
                                # TODO: it's not like that
                                # FRED: if it's wrong just use an unused symbol smh
                                # TODO: whatever
+    "default": TokenType.ELSE,
     
     "pyascent_function": TokenType.FN,
     "pyascent_return": TokenType.RET,
-    "returns_a": TokenType.ARROW
+    "returns_a": TokenType.ARROW,
+    "pyascent_check": TokenType.IF,
+    "pyascent_fallback": TokenType.ELSE,
     
     # "SET": TokenType.VAR,
     # "AS": TokenType.COLON,
@@ -89,8 +108,5 @@ def lookup_ident(ident: str) -> TokenType:
     tt = ALT_KEYWORDS.get(ident)
     if tt is not None:
         return tt
-
-    if ident in TYPE_KEYWORD:
-        return TokenType.TYPE
     
-    return TokenType.IDENT
+    return TokenType.TYPE if ident in TYPE_KEYWORD else TokenType.IDENT

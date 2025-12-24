@@ -27,7 +27,14 @@ PRECEDENCES: dict[TokenType, PrecedenceType] = {
     TokenType.SLASH: PrecedenceType.P_PRODUCT,
     TokenType.ASTERISK: PrecedenceType.P_PRODUCT,
     TokenType.MODULUS: PrecedenceType.P_PRODUCT,
-    TokenType.POW: PrecedenceType.P_EXPONENT
+    TokenType.POW: PrecedenceType.P_EXPONENT,
+    
+    TokenType.EQ_EQ: PrecedenceType.P_EQUALS,
+    TokenType.NOT_EQ: PrecedenceType.P_EQUALS,
+    TokenType.LT: PrecedenceType.P_LESSGREATER,
+    TokenType.GT: PrecedenceType.P_LESSGREATER,
+    TokenType.LT_EQ: PrecedenceType.P_LESSGREATER,
+    TokenType.GT_EQ: PrecedenceType.P_LESSGREATER,
 }
 
 class Parser:
@@ -44,7 +51,11 @@ class Parser:
             TokenType.IDENT: self.__parse_identifier,
             TokenType.INT: self.__parse_int_literal,
             TokenType.FLOAT: self.__parse_float_literal,
-            TokenType.LPAREN: self.__parse_grouped_expression
+            TokenType.LPAREN: self.__parse_grouped_expression,
+            
+            TokenType.IF: self.__parse_if_statement, # type: ignore
+            TokenType.TRUE: self.__parse_boolean, # type: ignore
+            TokenType.FALSE: self.__parse_boolean, # type: ignore
         }
         self.infix_parse_fns: dict[TokenType, Callable] = {
             TokenType.PLUS: self.__parse_infix_expression,
@@ -53,6 +64,13 @@ class Parser:
             TokenType.ASTERISK: self.__parse_infix_expression,
             TokenType.POW: self.__parse_infix_expression,
             TokenType.MODULUS: self.__parse_infix_expression,
+            
+            TokenType.EQ_EQ: self.__parse_infix_expression,
+            TokenType.NOT_EQ: self.__parse_infix_expression,
+            TokenType.LT: self.__parse_infix_expression,
+            TokenType.GT: self.__parse_infix_expression,
+            TokenType.LT_EQ: self.__parse_infix_expression,
+            TokenType.GT_EQ: self.__parse_infix_expression,
         }
 
         # Populate the current_token and peek_token

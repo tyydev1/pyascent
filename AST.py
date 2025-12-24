@@ -12,6 +12,7 @@ class NodeType(Enum):
     BlockStatement = "BlockStatement"
     ReturnStatement = "ReturnStatement"
     AssignStatement = "AssignStatement"
+    IfStatement = "IfStatement"
     
     # Expressions
     InfixExpression = "InfixExpression"
@@ -20,6 +21,7 @@ class NodeType(Enum):
     IntegerLiteral = "IntegerLiteral"
     FloatLiteral = "FloatLiteral"
     IdentifierLiteral = "IdentifierLiteral"
+    BooleanLiteral = "BooleanLiteral"
     
 class Node(ABC):
     @abstractmethod
@@ -148,6 +150,27 @@ class AssignStatement(Statement):
             "ident": self.ident.json() if self.ident else None,
             "right_value": self.right_value.json() if self.right_value else None
         }
+        
+class IfStatement(Statement):
+    def __init__(self, 
+                 condition: Optional[Expression] = None, 
+                 consequence: Optional[BlockStatement] = None, 
+                 alternative: Optional[BlockStatement] = None) -> None:
+        self.condition = condition
+        self.consequence = consequence
+        self.alternative = alternative
+
+    def type(self) -> NodeType:
+        return NodeType.IfStatement
+    
+    def json(self) -> dict:
+        if self.condition is None or self.consequence is None: raise
+        return {
+            "type": self.type().value,
+            "condition": self.condition.json(),
+            "consequence": self.consequence.json(),
+            "alternative": self.alternative.json() if self.alternative is not None else None
+        }
 # endregion
 
 # region Expressions
@@ -204,6 +227,19 @@ class IdentifierLiteral(Expression):
     
     def type(self) -> NodeType:
         return NodeType.IdentifierLiteral
+    
+    def json(self) -> dict:
+        return {
+            "type": self.type().value,
+            "value": self.value
+        }
+        
+class BooleanLiteral(Expression):
+    def __init__(self, value: Optional[bool] = None) -> None:
+        self.value = value
+    
+    def type(self) -> NodeType:
+        return NodeType.BooleanLiteral
     
     def json(self) -> dict:
         return {
