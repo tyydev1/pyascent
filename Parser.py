@@ -4,7 +4,7 @@ from typing import Callable, Optional
 from enum import Enum, auto
 
 from AST import Statement, Expression, Program
-from AST import ExpressionStatement, VarStatement, FunctionStatement, ReturnStatement, BlockStatement
+from AST import ExpressionStatement, VarStatement, FunctionStatement, ReturnStatement, BlockStatement, AssignStatement
 from AST import InfixExpression
 from AST import IntegerLiteral, FloatLiteral, IdentifierLiteral
 
@@ -114,6 +114,9 @@ class Parser:
 
     # region Statement Methods
     def __parse_statement(self) -> Statement:
+        if self.current_token.type == TokenType.IDENT and self.__peek_token_is(TokenType.EQ):
+            return self.__parse_assignment_statement()
+        
         match self.current_token.type:
             case TokenType.VAR:
                 return self.__parse_var_statement()
@@ -221,6 +224,19 @@ class Parser:
             self.__next_token()
             
         return block_stmt
+    
+    def __parse_assignment_statement(self) -> AssignStatement:
+        stmt: AssignStatement = AssignStatement()
+        
+        stmt.ident = IdentifierLiteral(value=self.current_token.literal)
+        
+        self.__next_token(); self.__next_token()
+        
+        stmt.right_value = self.__parse_expression(PrecedenceType.P_LOWEST)
+        
+        self.__next_token()
+        
+        return stmt
     # endregion
 
     # region Expression Methods

@@ -12,7 +12,7 @@ from ctypes import CFUNCTYPE, c_int, c_float
 
 LEXER_DEBUG: bool = False
 PARSER_DEBUG: bool = False
-COMPILER_DEBUG: bool = False
+COMPILER_DEBUG: bool = True
 RUN_CODE: bool = True
 
 if __name__ == '__main__':

@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional, Tuple
 from llvmlite import ir # type: ignore
 
-from AST import Node, NodeType, Program, Expression, Statement
-from AST import ExpressionStatement, VarStatement, BlockStatement, FunctionStatement, ReturnStatement
+from AST import Node, NodeType, Program, Expression
+from AST import ExpressionStatement, VarStatement, BlockStatement, FunctionStatement, ReturnStatement, AssignStatement
 from AST import InfixExpression
 from AST import IntegerLiteral, FloatLiteral, IdentifierLiteral
 
@@ -21,6 +21,9 @@ class Compiler:
         
         self.env: Environment = Environment()
         
+        # Temporary keeping track of errors
+        self.errors: List[str] = []
+        
     def compile(self, node: Node) -> None:
         match node.type():
             case NodeType.Program:
@@ -37,6 +40,8 @@ class Compiler:
                 self.__visit_block_statement(node) # type: ignore
             case NodeType.ReturnStatement:
                 self.__visit_return_statement(node) # type: ignore
+            case NodeType.AssignStatement:
+                self.__visit_assign_statement(node) # type: ignore
             
             # Expressions
             case NodeType.InfixExpression:
@@ -115,6 +120,18 @@ class Compiler:
         self.env.define(name, func, return_type)
 
         self.builder = previous_builder
+        
+    def __visit_assign_statement(self, node: AssignStatement) -> None:
+        name: str = node.ident.value # type: ignore
+        value: Expression = node.right_value # type: ignore
+
+        value, Type = self.__resolve_value(value)
+
+        if self.env.lookup(name) is None:
+            self.errors.append(f"CompilerError: identifier '{name}' has not been declared before it was re-assigned")
+        else:
+            ptr, _ = self.env.lookup(name)
+            self.builder.store(value, ptr)
     # endregion
     
     # region Expressions

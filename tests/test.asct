@@ -1,4 +1,10 @@
 fn main() -> int {
-    let a: int = 64;
-    ret a / 2 - 16 * 2;
+    var a: int = 64;
+
+    a = a / 2 - 16 * 2;
+    let b: int = a + 1;
+
+    let ret_val: int = b + (a - 10);
+
+    ret ret_val + ((8 - 3) * 2) - 1;
 }
