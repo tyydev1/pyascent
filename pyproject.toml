@@ -1,0 +1,9 @@
+[project]
+name = "ascent"
+version = "0.1.0"
+description = "The A-static Compiled Native programming language."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "llvmlite>=0.46.0",
+]

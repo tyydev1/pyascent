@@ -1,0 +1,4 @@
+fn main() -> int {
+    let a: int = 64;
+    ret a / 2 - 16 * 2;
+}
