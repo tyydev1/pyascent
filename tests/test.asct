@@ -9,7 +9,7 @@ fn main() -> int {
     if ret_val == 0 {
         ret ret_val;
     } else {
-        ret_val = ret_val + ((8 - 3) * 2) - 1
+        ret_val = ret_val + ((8 - 3) * 2) - 1;
     }
 
     ret ret_val;

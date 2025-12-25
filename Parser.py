@@ -3,7 +3,7 @@ from Token import Token, TokenType
 from typing import Callable, Optional
 from enum import Enum, auto
 
-from AST import Statement, Expression, Program
+from AST import BooleanLiteral, IfStatement, Statement, Expression, Program
 from AST import ExpressionStatement, VarStatement, FunctionStatement, ReturnStatement, BlockStatement, AssignStatement
 from AST import InfixExpression
 from AST import IntegerLiteral, FloatLiteral, IdentifierLiteral
@@ -53,9 +53,9 @@ class Parser:
             TokenType.FLOAT: self.__parse_float_literal,
             TokenType.LPAREN: self.__parse_grouped_expression,
             
-            TokenType.IF: self.__parse_if_statement, # type: ignore
-            TokenType.TRUE: self.__parse_boolean, # type: ignore
-            TokenType.FALSE: self.__parse_boolean, # type: ignore
+            TokenType.IF: self.__parse_if_statement,
+            TokenType.TRUE: self.__parse_boolean_literal,
+            TokenType.FALSE: self.__parse_boolean_literal,
         }
         self.infix_parse_fns: dict[TokenType, Callable] = {
             TokenType.PLUS: self.__parse_infix_expression,
@@ -100,15 +100,11 @@ class Parser:
     
     def __current_precedence(self) -> PrecedenceType:
         prec: PrecedenceType | None = PRECEDENCES.get(self.current_token.type)
-        if prec is None:
-            return PrecedenceType.P_LOWEST
-        return prec
+        return PrecedenceType.P_LOWEST if prec is None else prec
     
     def __peek_precedence(self) -> PrecedenceType:
         prec: PrecedenceType | None = PRECEDENCES.get(self.peek_token.type)
-        if prec is None:
-            return PrecedenceType.P_LOWEST
-        return prec
+        return PrecedenceType.P_LOWEST if prec is None else prec
     
     def __peek_error(self, tt: TokenType) -> None:
         self.errors.append(f"Expected next token to be {tt}, got {self.peek_token.type} instead.")
@@ -224,10 +220,7 @@ class Parser:
         
         stmt.return_value = self.__parse_expression(PrecedenceType.P_LOWEST)
         
-        if not self.__expect_peek(TokenType.SEMICOLON):
-            return None
-        
-        return stmt
+        return stmt if self.__expect_peek(TokenType.SEMICOLON) else None
     
     def __parse_block_statement(self) -> BlockStatement:
         block_stmt: BlockStatement = BlockStatement()
@@ -255,6 +248,30 @@ class Parser:
         self.__next_token()
         
         return stmt
+    
+    def __parse_if_statement(self) -> Optional[IfStatement]:
+        condition: Optional[Expression] = None
+        consequence: Optional[BlockStatement] = None
+        alternative: Optional[BlockStatement] = None
+        
+        self.__next_token()
+        
+        condition = self.__parse_expression(PrecedenceType.P_LOWEST)
+        
+        if not self.__expect_peek(TokenType.LBRACE):
+            return None
+        
+        consequence = self.__parse_block_statement()
+        
+        if self.__peek_token_is(TokenType.ELSE):
+            self.__next_token()
+            
+            if not self.__expect_peek(TokenType.LBRACE):
+                return None
+            
+            alternative = self.__parse_block_statement()
+            
+        return IfStatement(condition, consequence, alternative)
     # endregion
 
     # region Expression Methods
@@ -292,11 +309,8 @@ class Parser:
         self.__next_token()
 
         expr: Expression = self.__parse_expression(PrecedenceType.P_LOWEST)
-
-        if not self.__expect_peek(TokenType.RPAREN):
-            return None # type: ignore
         
-        return expr
+        return expr if self.__expect_peek(TokenType.RPAREN) else None # type: ignore
     # endregion
 
     # region Prefix Methods
@@ -309,7 +323,7 @@ class Parser:
 
         try:
             int_lit.value = int(self.current_token.literal)
-        except:
+        except Exception:
             self.errors.append(f"Could not parse `{self.current_token.literal}` as an integer.")
             return None # type: ignore
         
@@ -321,9 +335,12 @@ class Parser:
 
         try:
             float_lit.value = float(self.current_token.literal)
-        except:
+        except Exception:
             self.errors.append(f"Could not parse `{self.current_token.literal}` as an float.")
             return None # type: ignore
         
         return float_lit
+    
+    def __parse_boolean_literal(self) -> BooleanLiteral:
+        return BooleanLiteral(value=self.__current_token_is(TokenType.TRUE))
     # endregion

@@ -2,6 +2,8 @@
 target triple = "x86_64-unknown-linux-gnu"
 target datalayout = ""
 
+@"true" = constant i1 1
+@"false" = constant i1 0
 define i32 @"main"()
 {
 main_entry:
@@ -23,9 +25,13 @@ main_entry:
   %".17" = alloca i32
   store i32 %".16", i32* %".17"
   %".19" = load i32, i32* %".17"
-  %".20" = sub i32 8, 3
-  %".21" = mul i32 %".20", 2
-  %".22" = add i32 %".19", %".21"
-  %".23" = sub i32 %".22", 1
-  ret i32 %".23"
+  %".20" = icmp eq i32 %".19", 0
+  br i1 %".20", label %"main_entry.if", label %"main_entry.else"
+main_entry.if:
+  %".22" = load i32, i32* %".17"
+  ret i32 %".22"
+main_entry.else:
+main_entry.endif:
+  %".24" = load i32, i32* %".17"
+  ret i32 %".24"
 }
