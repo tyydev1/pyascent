@@ -102,7 +102,7 @@ class Compiler:
             
     def __visit_block_statement(self, node: BlockStatement) -> None:
         for stmt in node.statements:
-            if self.builder.block.is_terminated:
+            if self.builder.block.terminator is not None:
                 break
             self.compile(stmt)
             
@@ -110,11 +110,9 @@ class Compiler:
         value: Expression = node.return_value # type: ignore
         value, Type = self.__resolve_value(value)
         
-        self.builder.ret(value)
-        
-        if not self.builder.block.is_terminated:
+        if self.builder.block.terminator is None:
             self.builder.ret(value)
-        
+
     def __visit_function_statement(self, node: FunctionStatement) -> None:
         name: str = node.name.value # type: ignore
         body: BlockStatement = node.body # type: ignore
@@ -172,11 +170,28 @@ class Compiler:
             with self.builder.if_then(test):
                 self.compile(consequence) # type: ignore
         else:
-            with self.builder.if_else(test) as (true, otherwise):
-                with true:
-                    self.compile(consequence) # type: ignore
-                with otherwise:
-                    self.compile(alternative)
+            # Manually create blocks
+            then_block = self.builder.append_basic_block('if.then')
+            else_block = self.builder.append_basic_block('if.else')
+            merge_block = self.builder.append_basic_block('if.merge')
+            
+            # Create conditional branch
+            self.builder.cbranch(test, then_block, else_block)
+            
+            # Compile then block
+            self.builder.position_at_end(then_block)
+            self.compile(consequence) # type: ignore
+            if self.builder.block.terminator is None:
+                self.builder.branch(merge_block)
+            
+            # Compile else block
+            self.builder.position_at_end(else_block)
+            self.compile(alternative) # type: ignore
+            if self.builder.block.terminator is None:
+                self.builder.branch(merge_block)
+            
+            # Continue in merge block
+            self.builder.position_at_end(merge_block)
     # endregion
     
     # region Expressions

@@ -118,7 +118,7 @@
                                         "type": "IdentifierLiteral",
                                         "value": "ret_val"
                                     },
-                                    "operator": "==",
+                                    "operator": "!=",
                                     "right_node": {
                                         "type": "IntegerLiteral",
                                         "value": 0
@@ -181,16 +181,16 @@
                                                     "value": 1
                                                 }
                                             }
-                                        },
-                                        {
-                                            "type": "ReturnStatement",
-                                            "return_value": {
-                                                "type": "IdentifierLiteral",
-                                                "value": "ret_val"
-                                            }
                                         }
                                     ]
                                 }
+                            }
+                        },
+                        {
+                            "type": "ReturnStatement",
+                            "return_value": {
+                                "type": "IdentifierLiteral",
+                                "value": "ret_val"
                             }
                         }
                     ]
