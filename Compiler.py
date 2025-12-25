@@ -102,7 +102,7 @@ class Compiler:
             
     def __visit_block_statement(self, node: BlockStatement) -> None:
         for stmt in node.statements:
-            if not self.builder.block.is_terminated:
+            if self.builder.block.is_terminated:
                 break
             self.compile(stmt)
             
