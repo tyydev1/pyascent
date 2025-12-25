@@ -1,3 +1,8 @@
+fn ret_o() -> int {
+    let code: int = 0;
+    ret code;
+}
+
 fn main() -> int {
     var a: int = 64;
 
@@ -7,10 +12,10 @@ fn main() -> int {
     let ret_val: int = b + (a - 10);
 
     if ret_val != 0 {
-        ret ret_val;
+        ret_val = ret_val;
     } else {
         ret_val = ret_val + ((8 - 3) * 2) - 1;
     }
 
-    ret ret_val;
+    ret ret_o();
 }

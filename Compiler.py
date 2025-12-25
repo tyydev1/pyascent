@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Tuple
 from llvmlite import ir # type: ignore
 
-from AST import Node, NodeType, Program, Expression
+from AST import CallExpression, Node, NodeType, Program, Expression
 from AST import ExpressionStatement, VarStatement, BlockStatement, FunctionStatement, ReturnStatement, AssignStatement, IfStatement
 from AST import InfixExpression
 from AST import IntegerLiteral, FloatLiteral, IdentifierLiteral, BooleanLiteral
@@ -69,6 +69,8 @@ class Compiler:
             # Expressions
             case NodeType.InfixExpression:
                 self.__visit_infix_expression(node) # type: ignore
+            case NodeType.CallExpression:
+                self.__visit_call_expression(node) # type: ignore
         
         
     # region Visit Methods
@@ -170,28 +172,11 @@ class Compiler:
             with self.builder.if_then(test):
                 self.compile(consequence) # type: ignore
         else:
-            # Manually create blocks
-            then_block = self.builder.append_basic_block('if.then')
-            else_block = self.builder.append_basic_block('if.else')
-            merge_block = self.builder.append_basic_block('if.merge')
-            
-            # Create conditional branch
-            self.builder.cbranch(test, then_block, else_block)
-            
-            # Compile then block
-            self.builder.position_at_end(then_block)
-            self.compile(consequence) # type: ignore
-            if self.builder.block.terminator is None:
-                self.builder.branch(merge_block)
-            
-            # Compile else block
-            self.builder.position_at_end(else_block)
-            self.compile(alternative) # type: ignore
-            if self.builder.block.terminator is None:
-                self.builder.branch(merge_block)
-            
-            # Continue in merge block
-            self.builder.position_at_end(merge_block)
+            with self.builder.if_else(test) as (true, otherwise):
+                with true:
+                    self.compile(consequence) # type: ignore
+                with otherwise:
+                    self.compile(alternative)
     # endregion
     
     # region Expressions
@@ -233,6 +218,9 @@ class Compiler:
                 case '==':
                     value = self.builder.icmp_signed('==', left_value, right_value)
                     Type = ir.IntType(1)
+                case '!=':
+                    value = self.builder.icmp_signed('!=', left_value, right_value)
+                    Type = ir.IntType(1)
                 
         elif isinstance(right_type, ir.FloatType) and isinstance(left_type, ir.FloatType):
             Type = ir.FloatType()
@@ -265,8 +253,28 @@ class Compiler:
                 case '==':
                     value = self.builder.fcmp_ordered('==', left_value, right_value)
                     Type = ir.IntType(1)
+                case '!=':
+                    value = self.builder.fcmp_ordered('!=', left_value, right_value)
+                    Type = ir.IntType(1)
                     
         return value, Type
+    
+    def __visit_call_expression(self, node: CallExpression):
+        name = node.function.value # type: ignore
+        params = node.arguments # type: ignore
+        
+        args = []
+        types = []
+        # TODO
+        
+        match name:
+            # TODO: builtins
+            
+            case _:
+                func, ret_type = self.env.lookup(name)
+                ret = self.builder.call(func, args)
+                
+        return ret, ret_type
     # endregion
     
     # endregion
@@ -293,6 +301,8 @@ class Compiler:
             # Expression Values
             case NodeType.InfixExpression:
                 return self.__visit_infix_expression(node) # type: ignore
+            case NodeType.CallExpression:
+                return self.__visit_call_expression(node) # type: ignore
             
         return (None, None)
     # endregion

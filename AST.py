@@ -16,6 +16,7 @@ class NodeType(Enum):
     
     # Expressions
     InfixExpression = "InfixExpression"
+    CallExpression = "CallExpression"
     
     # Literals
     IntegerLiteral = "IntegerLiteral"
@@ -192,6 +193,23 @@ class InfixExpression(Expression):
             "operator": self.operator,
             "right_node": self.right_node.json()
         }
+        
+        
+class CallExpression(Expression):
+    def __init__(self, function: Optional[Expression] = None, arguments: Optional[List[Expression]] = None) -> None:
+        self.function = function # IdentifierLiteral
+        self.arguments = arguments
+
+    def type(self) -> NodeType:
+        return NodeType.CallExpression
+    
+    def json(self) -> dict:
+        if self.function is None or self.arguments is None: raise
+        return {
+            "type": self.type().value,
+            "function": self.function.json(),
+            "arguments": [arg.json() for arg in self.arguments]
+        }        
 # endregion
 
 # region Literals

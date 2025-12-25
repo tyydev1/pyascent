@@ -5,7 +5,7 @@ from enum import Enum, auto
 
 from AST import BooleanLiteral, IfStatement, Statement, Expression, Program
 from AST import ExpressionStatement, VarStatement, FunctionStatement, ReturnStatement, BlockStatement, AssignStatement
-from AST import InfixExpression
+from AST import InfixExpression, CallExpression
 from AST import IntegerLiteral, FloatLiteral, IdentifierLiteral
 
 # Precedence Types
@@ -35,6 +35,8 @@ PRECEDENCES: dict[TokenType, PrecedenceType] = {
     TokenType.GT: PrecedenceType.P_LESSGREATER,
     TokenType.LT_EQ: PrecedenceType.P_LESSGREATER,
     TokenType.GT_EQ: PrecedenceType.P_LESSGREATER,
+    
+    TokenType.LPAREN: PrecedenceType.P_CALL,
 }
 
 class Parser:
@@ -71,6 +73,8 @@ class Parser:
             TokenType.GT: self.__parse_infix_expression,
             TokenType.LT_EQ: self.__parse_infix_expression,
             TokenType.GT_EQ: self.__parse_infix_expression,
+            
+            TokenType.LPAREN: self.__parse_call_expression
         }
 
         # Populate the current_token and peek_token
@@ -311,6 +315,14 @@ class Parser:
         expr: Expression = self.__parse_expression(PrecedenceType.P_LOWEST)
         
         return expr if self.__expect_peek(TokenType.RPAREN) else None # type: ignore
+    
+    def __parse_call_expression(self, function: Expression) -> CallExpression:
+        expr = CallExpression(function)
+        expr.arguments = [] # TODO
+        if not self.__expect_peek(TokenType.RPAREN):
+            return None # type: ignore
+        
+        return expr
     # endregion
 
     # region Prefix Methods

@@ -6,6 +6,41 @@
                 "type": "FunctionStatement",
                 "name": {
                     "type": "IdentifierLiteral",
+                    "value": "ret_o"
+                },
+                "return_type": "int",
+                "parameters": [],
+                "body": {
+                    "type": "BlockStatement",
+                    "statements": [
+                        {
+                            "type": "VarStatement",
+                            "name": {
+                                "type": "IdentifierLiteral",
+                                "value": "code"
+                            },
+                            "value": {
+                                "type": "IntegerLiteral",
+                                "value": 0
+                            },
+                            "value_type": "int"
+                        },
+                        {
+                            "type": "ReturnStatement",
+                            "return_value": {
+                                "type": "IdentifierLiteral",
+                                "value": "code"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "FunctionStatement": {
+                "type": "FunctionStatement",
+                "name": {
+                    "type": "IdentifierLiteral",
                     "value": "main"
                 },
                 "return_type": "int",
@@ -184,6 +219,57 @@
                                         }
                                     ]
                                 }
+                            }
+                        },
+                        {
+                            "type": "VarStatement",
+                            "name": {
+                                "type": "IdentifierLiteral",
+                                "value": "proper_ret_val"
+                            },
+                            "value": {
+                                "type": "CallExpression",
+                                "function": {
+                                    "type": "IdentifierLiteral",
+                                    "value": "ret_o"
+                                },
+                                "arguments": []
+                            },
+                            "value_type": "int"
+                        },
+                        {
+                            "type": "ExpressionStatement",
+                            "expr": {
+                                "type": "IfStatement",
+                                "condition": {
+                                    "type": "InfixExpression",
+                                    "left_node": {
+                                        "type": "IdentifierLiteral",
+                                        "value": "ret_val"
+                                    },
+                                    "operator": "!=",
+                                    "right_node": {
+                                        "type": "IdentifierLiteral",
+                                        "value": "proper_ret_val"
+                                    }
+                                },
+                                "consequence": {
+                                    "type": "BlockStatement",
+                                    "statements": [
+                                        {
+                                            "type": "AssignStatement",
+                                            "ident": {
+                                                "type": "IdentifierLiteral",
+                                                "value": "ret_val"
+                                            },
+                                            "right_value": {
+                                                "type": "IntegerLiteral",
+                                                "value": 0
+                                            }
+                                        }
+                                    ]
+                                },
+                                "alternative": null
                             }
                         },
                         {
