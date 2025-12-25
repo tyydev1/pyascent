@@ -6,7 +6,7 @@ fn main() -> int {
 
     let ret_val: int = b + (a - 10);
 
-    if ret_val == 0 {
+    if ret_val != 0 {
         ret ret_val;
     } else {
         ret_val = ret_val + ((8 - 3) * 2) - 1;

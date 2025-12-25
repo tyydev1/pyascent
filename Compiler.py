@@ -102,6 +102,8 @@ class Compiler:
             
     def __visit_block_statement(self, node: BlockStatement) -> None:
         for stmt in node.statements:
+            if not self.builder.block.is_terminated:
+                break
             self.compile(stmt)
             
     def __visit_return_statement(self, node: ReturnStatement) -> None:
@@ -109,6 +111,9 @@ class Compiler:
         value, Type = self.__resolve_value(value)
         
         self.builder.ret(value)
+        
+        if not self.builder.block.is_terminated:
+            self.builder.ret(value)
         
     def __visit_function_statement(self, node: FunctionStatement) -> None:
         name: str = node.name.value # type: ignore
@@ -170,6 +175,8 @@ class Compiler:
             with self.builder.if_else(test) as (true, otherwise):
                 with true:
                     self.compile(consequence) # type: ignore
+                with otherwise:
+                    self.compile(alternative)
     # endregion
     
     # region Expressions
